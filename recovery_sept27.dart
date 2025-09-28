@@ -1,1 +1,1 @@
-// Recovery for Sept 27
+// Attendance calculation logic
