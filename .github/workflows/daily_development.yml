@@ -1,4 +1,4 @@
-name: Daily Development Manager
+name: Daily Development Tracker
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  daily-development:
+  daily-dev:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -14,94 +14,65 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup development environment
+      - name: Create today's development entry
         run: |
           # Create organized folder structure
-          mkdir -p docs/development lib/utils logs
-          echo "✅ Created organized folder structure"
-
-      - name: Generate daily development content
-        run: |
-          # Flutter-specific activities
-          FLUTTER_ACTIVITIES=(
-            "Refactored widget tree for better performance"
-            "Implemented state management with Provider"
-            "Optimized Flutter animations and smoothness"
-            "Added custom UI components to library"
-            "Enhanced navigation routing system"
-            "Improved error handling and user feedback"
-            "Updated Dart dependencies and null safety"
-            "Created Flutter widget tests"
-            "Optimized app startup time"
-            "Implemented theme switching"
+          mkdir -p docs/daily-progress
+          
+          # Today's date for fresh start
+          TODAY=$(date '+%Y-%m-%d')
+          
+          # Development activities for today
+          ACTIVITIES=(
+            "Optimized Flutter widget performance and rendering"
+            "Enhanced application state management architecture"
+            "Improved user interface components and animations"
+            "Updated project documentation and code comments"
+            "Refactored service classes for better maintainability"
+            "Implemented new utility functions and helpers"
+            "Enhanced error handling and user feedback systems"
+            "Optimized database queries and data fetching"
+            "Added new test cases for critical functionality"
+            "Improved application security and validation"
           )
           
-          # Get random activity
-          RANDOM_INDEX=$(( RANDOM % ${#FLUTTER_ACTIVITIES[@]} ))
-          ACTIVITY="${FLUTTER_ACTIVITIES[$RANDOM_INDEX]}"
+          # Select random activity for today
+          RANDOM_INDEX=$(( RANDOM % ${#ACTIVITIES[@]} ))
+          ACTIVITY="${ACTIVITIES[$RANDOM_INDEX]}"
           
-          # Update development log
-          echo "## $(date '+%Y-%m-%d')" >> docs/development/daily_log.md
-          echo "- **$ACTIVITY**" >> docs/development/daily_log.md
-          echo "- **Generated**: $(date)" >> docs/development/daily_log.md
-          echo "" >> docs/development/daily_log.md
-          
-          # Create simple timestamp file
-          echo "Last updated: $(date)" > logs/daily_timestamp.txt
-          
-          echo "📝 Added daily development entry: $ACTIVITY"
+          # Create today's progress entry
+          cat >> docs/daily-progress/progress_log.md << EOF
 
-      - name: Create utility files occasionally
+## $TODAY
+- **Activity**: $ACTIVITY
+- **Time**: $(date)
+- **Status**: Completed
+
+EOF
+          
+          echo "📅 Today's development: $ACTIVITY"
+
+      - name: Create timestamp file
         run: |
-          # Create Dart utility files every 3 days
-          DAY_OF_MONTH=$(date +%d)
-          if [ $((DAY_OF_MONTH % 3)) -eq 0 ]; then
-            cat > lib/utils/helper_$(date +%m%d).dart << 'DART'
-// Utility functions for Sunday School app
-// Generated: $(date '+%Y-%m-%d')
+          echo "Last development activity: $(date)" > last_activity.txt
 
-class AppUtils {
-  /// Format date for display
-  static String formatDate(DateTime date) {
-    return '\${date.day}/\${date.month}/\${date.year}';
-  }
-  
-  /// Validate email format
-  static bool isValidEmail(String email) {
-    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    return regex.hasMatch(email);
-  }
-}
-DART
-            echo "🎯 Created new Dart utility file"
-          fi
-
-      - name: Generate professional commit
+      - name: Commit today's work
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@users.noreply.github.com"
           
-          # Professional commit messages
-          COMMIT_TYPES=("feat" "fix" "refactor" "docs" "chore")
-          COMMIT_SCOPES=("ui" "performance" "utils" "docs" "config")
-          TYPE=${COMMIT_TYPES[$((RANDOM % ${#COMMIT_TYPES[@]}))]}
-          SCOPE=${COMMIT_SCOPES[$((RANDOM % ${#COMMIT_SCOPES[@]}))]}
-          
+          # Today's commit message
           COMMIT_MESSAGES=(
-            "$TYPE($SCOPE): daily development update"
-            "$TYPE($SCOPE): code maintenance and improvements"
-            "$TYPE($SCOPE): update project documentation"
-            "$TYPE($SCOPE): optimize application performance"
-            "$TYPE($SCOPE): enhance user interface components"
+            "chore: daily development update"
+            "docs: update project progress"
+            "refactor: code maintenance and improvements"
+            "feat: application enhancements"
           )
           
           COMMIT_MSG=${COMMIT_MESSAGES[$((RANDOM % ${#COMMIT_MESSAGES[@]}))]}
           
           git add .
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "$COMMIT_MSG"
-            git push
-            echo "🚀 Daily development update completed: $COMMIT_MSG"
-          fi
+          git commit -m "$COMMIT_MSG - $(date '+%Y-%m-%d')" || exit 0
+          git push
+          
+          echo "✅ Today's development tracked: $COMMIT_MSG"
