@@ -5,7 +5,6 @@ on:
     - cron: '30 20 * * *'  # 11:30 PM Ethiopia time
   workflow_dispatch:
 
-# Add permissions at the workflow level
 permissions:
   contents: write
 
@@ -17,17 +16,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create today's development entry
         run: |
-          # Create organized folder structure
           mkdir -p docs/daily-progress
-          
-          # Today's date for fresh start
           TODAY=$(date '+%Y-%m-%d')
           
-          # Development activities for today
           ACTIVITIES=(
             "Optimized Flutter widget performance and rendering"
             "Enhanced application state management architecture"
@@ -41,44 +40,22 @@ jobs:
             "Improved application security and validation"
           )
           
-          # Select random activity for today
           RANDOM_INDEX=$(( RANDOM % ${#ACTIVITIES[@]} ))
           ACTIVITY="${ACTIVITIES[$RANDOM_INDEX]}"
           
-          # Create today's progress entry
-          cat >> docs/daily-progress/progress_log.md << EOF
-
-## $TODAY
-- **Activity**: $ACTIVITY
-- **Time**: $(date)
-- **Status**: Completed
-
-EOF
+          # Append to progress log
+          echo "" >> docs/daily-progress/progress_log.md
+          echo "## $TODAY" >> docs/daily-progress/progress_log.md
+          echo "- **Activity**: $ACTIVITY" >> docs/daily-progress/progress_log.md
+          echo "- **Time**: $(date)" >> docs/daily-progress/progress_log.md
+          echo "- **Status**: Completed" >> docs/daily-progress/progress_log.md
+          echo "" >> docs/daily-progress/progress_log.md
           
           echo "📅 Today's development: $ACTIVITY"
 
-      - name: Create timestamp file
-        run: |
-          echo "Last development activity: $(date)" > last_activity.txt
-
-      - name: Commit today's work
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@users.noreply.github.com"
-          
-          # Today's commit message
-          COMMIT_MESSAGES=(
-            "chore: daily development update"
-            "docs: update project progress"
-            "refactor: code maintenance and improvements"
-            "feat: application enhancements"
-          )
-          
-          COMMIT_MSG=${COMMIT_MESSAGES[$((RANDOM % ${#COMMIT_MESSAGES[@]}))]}
-          
-          git add .
-          git commit -m "$COMMIT_MSG - $(date '+%Y-%m-%d')" || exit 0
-          git push
-        env:
-          # Use the token for authentication
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: daily development update - $(date '+%Y-%m-%d')"
+          commit_options: '--no-verify'
+          file_pattern: 'docs/daily-progress/progress_log.md'
