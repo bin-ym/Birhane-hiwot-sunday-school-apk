@@ -5,6 +5,10 @@ on:
     - cron: '30 20 * * *'  # 11:30 PM Ethiopia time
   workflow_dispatch:
 
+# Add permissions at the workflow level
+permissions:
+  contents: write
+
 jobs:
   daily-dev:
     runs-on: ubuntu-latest
@@ -13,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Create today's development entry
         run: |
@@ -74,5 +79,6 @@ EOF
           git add .
           git commit -m "$COMMIT_MSG - $(date '+%Y-%m-%d')" || exit 0
           git push
-          
-          echo "✅ Today's development tracked: $COMMIT_MSG"
+        env:
+          # Use the token for authentication
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
