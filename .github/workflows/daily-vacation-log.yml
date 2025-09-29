@@ -12,18 +12,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # ⚠️ ADD THIS LINE!
-          
+          token: ${{ secrets.AUTOMATION_TOKEN }}  # Use our new token!
+
       - name: Create daily log entry
         run: |
-          # Create a simple text file
           echo "Development work on $(date '+%Y-%m-%d')" >> daily_log.txt
-          echo "✅ Added entry for $(date '+%Y-%m-%d')"
-          
+          echo "✅ Log entry created"
+
       - name: Commit and push changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "bin-ym"
+          git config user.email "binyam.tagel@gmail.com"  # Use YOUR email
           git add daily_log.txt
-          git commit -m "docs: update for $(date '+%Y-%m-%d')"
+          git commit -m "docs: update for $(date '+%Y-%m-%d')" || exit 0
           git push
